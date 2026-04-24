@@ -155,10 +155,24 @@ ${text.slice(0, 800)}
       .trim();
 
     try {
-      res.json(JSON.parse(cleaned));
-    } catch {
-      res.json({ text: cleaned });
-    }
+  const parsed = JSON.parse(cleaned);
+
+  // extra safety check
+  if (!Array.isArray(parsed)) {
+    throw new Error("Invalid format from AI");
+  }
+
+  return res.json(parsed);
+
+} catch (err) {
+  console.error("❌ JSON PARSE FAILED:");
+  console.error(cleaned);
+
+  return res.status(500).json({
+    error: "AI returned invalid format",
+    raw: cleaned
+  });
+}
 
   } catch (error) {
     console.error("TOPICS ROUTE ERROR:", error);
@@ -213,6 +227,13 @@ ${content.slice(0, 2000)}
     });
 
     const data = await response.json();
+    if (!response.ok) {
+  console.error("Gemini API error:", data);
+  return res.status(500).json({
+    error: "Gemini API failed",
+    details: data
+  });
+}
 
     console.log("MCQ API RESPONSE:", data);
 
