@@ -1,6 +1,7 @@
+
 const dotenv = require("dotenv");
 dotenv.config();
-
+console.log("GEMINI KEY EXISTS:", !!process.env.GEMINI_API_KEY);
 const express = require("express");
 const path = require("path");
 
@@ -15,10 +16,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
-
+if (!GEMINI_KEY) {
+  console.warn("⚠️ WARNING: Gemini API key missing. AI routes will fail.");
+}
 if (!GEMINI_KEY) {
   console.error("❌ GEMINI KEY NOT FOUND IN .env");
-  process.exit(1);
 }
 
 const GEMINI_URL =
