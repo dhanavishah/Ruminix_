@@ -133,38 +133,36 @@ async function extractPPTX(file) {
 // ===============================
 async function identifyTopics(text) {
 
-  const response = await fetch("/api/topics", {  // ✅ FIXED
+  const response = await fetch("/api/topics", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      text
-    })
+    body: JSON.stringify({ text })
   });
 
   const data = await response.json();
 
   console.log("TOPICS RESPONSE:", data);
 
+  // ❌ backend error
   if (data.error) {
     console.error("API ERROR:", data.error);
-    alert("AI quota exceeded. Please wait and try again.");
     return [];
   }
 
-  // ✅ backend already returns parsed JSON
+  // ✅ correct format
   if (Array.isArray(data)) {
     return data;
   }
 
-  // fallback (if parsing failed backend side)
-  if (data.text) {
+  // ❌ fallback safe parsing
+  if (typeof data.text === "string") {
     try {
-      return JSON.parse(data.text);
-    } catch {
-      console.error("Fallback parsing failed:", data.text);
-      return [];
+      const parsed = JSON.parse(data.text);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      console.error("JSON parse failed:", data.text);
     }
   }
 

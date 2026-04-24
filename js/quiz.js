@@ -1,14 +1,15 @@
-let quizActive = false;
-let gameRunning = false;
+window.quizActive = false;
+window.gameRunning = false;
+window.gameLoop = gameLoop;
 let correct = 0;
 let wrong = 0;
 let topicStats = {}; // {subtopic: {c:0, w:0}}
 
-let questionsAsked = 0;
+window.questionsAsked = questionsAsked;
 const MAX_QUESTIONS = 10;
 
 let questions = [];     // ✅ stores all MCQs
-let currentQ = 0;       // ✅ pointer to current question
+window.currentQ = 0;       // ✅ pointer to current question
 
 let askedQuestionsSet = new Set(); // (optional now, but kept)
 
@@ -134,11 +135,11 @@ questions = [
 // ================= TRIGGER QUIZ =================
 function triggerQuiz(){
 
-  if(currentQ >= questions.length) return;
+  if(window.currentQ >= questions.length) return;
   quizActive = true
-  const q = questions[currentQ];
-  currentQ++;
-  questionsAsked++;
+  const q = questions[window.currentQ];
+  window.currentQ++;
+  window.questionsAsked++;
 
   const modal = document.getElementById("quizModal");
   modal.style.display = "flex";
@@ -182,9 +183,9 @@ function showQuestion(q){
         showNotification("Wrong ❌");
       }
 
-      if(questionsAsked >= MAX_QUESTIONS){
-        gameRunning = false;
-        quizActive = false;
+      if(window.questionsAsked >= MAX_QUESTIONS){
+        window.gameRunning = false;
+        window.quizActive = false;
 
         closeQuiz(true); // 👈 important
         endGameReport();
@@ -210,14 +211,14 @@ function closeQuiz(skipResume = false){
   if(!skipResume){
     quizActive = false;
     gameRunning = true;
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(window.gameLoop);
   }
 }
 function resetQuizState(){
   correct = 0;
   wrong = 0;
   topicStats = {};
-  currentQ = 0;
-  questionsAsked = 0;
+  window.currentQ = 0;
+  window.questionsAsked = 0;
 }
 window.triggerQuiz = triggerQuiz;

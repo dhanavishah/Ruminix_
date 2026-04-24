@@ -236,7 +236,8 @@ ${content.slice(0, 2000)}
 }
 
     console.log("MCQ API RESPONSE:", data);
-
+    console.log("RAW GEMINI RESPONSE:", data);
+console.log("RAW TEXT:", raw);
     const raw =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
@@ -248,9 +249,14 @@ ${content.slice(0, 2000)}
 
     try {
       res.json(JSON.parse(cleaned));
-    } catch {
-      res.json({ text: cleaned });
-    }
+    } catch (err) {
+  console.error("JSON PARSE FAILED:", cleaned);
+
+  return res.status(500).json({
+    error: "Invalid AI response format",
+    raw: cleaned
+  });
+}
 
   } catch (error) {
     console.error("MCQ ROUTE ERROR:", error);

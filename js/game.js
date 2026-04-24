@@ -1,9 +1,10 @@
+window.questions = window.questions || [];
 let canvas, ctx;
 let dino, obstacles;
 
-let gameRunning = false;
-let quizActive = false;
-
+window.gameRunning = false;
+window.quizActive = false;
+window.gameLoop = gameLoop;
 let spawnTimer = 0;
 let spawnInterval = 120;
 
@@ -44,8 +45,8 @@ async function startBreakGame(){
 
   obstacles = [];
 
-  gameRunning = false;
-  quizActive = false;
+  window.gameRunning = false;
+  window.quizActive = false;
 
   spawnTimer = 0;
 
@@ -75,7 +76,7 @@ if (window.generateAllQuestions) {
   loading.style.display = "none"
 
   gameRunning = true;
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(window.gameLoop);
 }
 
 // ================= JUMP =================
@@ -153,8 +154,8 @@ function roundRect(x, y, w, h, r){
 
 // ================= GAME LOOP =================
 function gameLoop(){
-  if(!gameRunning || quizActive){
-    requestAnimationFrame(gameLoop);
+  if(!window.gameRunning || window.quizActive){
+    requestAnimationFrame(window.gameLoop);
   return;
 }
 
@@ -214,7 +215,7 @@ function gameLoop(){
   drawDino(dino.x, dino.y);
 
   // ================= SPAWN =================
-  if(Array.isArray(questions) && currentQ < questions.length){
+  if(Array.isArray(window.questions) && window.currentQ < window.questions.length){
 
     spawnTimer++;
 
@@ -287,8 +288,8 @@ function gameLoop(){
         lives--;
 
         if(lives <= 0){
-          gameRunning = false;
-          quizActive = false;
+          window.gameRunning = false;
+          window.quizActive = false;
           showGameOver();
           return;
         }
@@ -311,14 +312,12 @@ function gameLoop(){
           });
         }
 
-        quizActive = true;
-        gameRunning = false;
+        window.quizActive = true;
+        window.gameRunning = false;
 
         obstacles.splice(i,1);
 
-        setTimeout(()=>{
-          triggerQuizGame();
-        }, 100);
+        queueMicrotask(() => triggerQuizGame());
 
         return;
       }
@@ -341,7 +340,7 @@ function gameLoop(){
 
   updateStatsUI();
 
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(window.gameLoop);
 }
 
 // ================= EFFECTS =================
@@ -371,7 +370,7 @@ async function triggerQuizGame(){
     console.error("triggerQuiz not found");
     quizActive = false;
     gameRunning = true;
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(window.gameLoop);
   }
 }
 
@@ -425,5 +424,5 @@ if (livesEl) livesEl.innerText = `Lives: ${lives || 0}`;
 function resumeGame(){
   document.getElementById("reportCard").style.display = "none";
   gameRunning = true;
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(window.gameLoop);
 }
