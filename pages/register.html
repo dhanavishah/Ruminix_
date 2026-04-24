@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ruminix | Register</title>
+<link rel="icon" type="image/png" href="../assets/favicon.png">
+<style>
+:root{
+  --blue:#2563eb;
+  --indigo:#4f46e5;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#0f172a;
+  --muted:#64748b;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Inter,system-ui,sans-serif;
+}
+
+body{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(15,23,42,0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.09) 1px, transparent 1px);
+  background-size:40px 40px;
+  color:var(--text);
+}
+
+/* Notification styling */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--indigo), var(--blue));
+  color: white;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.4s ease;
+  z-index: 1000;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.register-box{
+  width:400px;
+  background:var(--card);
+  padding:40px;
+  border-radius:30px;
+  box-shadow:0 25px 50px rgba(0,0,0,.05);
+}
+
+.register-box h1{
+  font-size:28px;
+  margin-bottom:10px;
+}
+
+.register-box p{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:25px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  font-size:14px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,var(--indigo),var(--blue));
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+button:hover{
+  opacity:.9;
+}
+
+.login-link{
+  margin-top:18px;
+  font-size:14px;
+  color:var(--muted);
+  text-align:center;
+}
+
+.login-link a{
+  color:var(--blue);
+  text-decoration:none;
+  font-weight:500;
+}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+<!-- Notification div -->
+<div id="notification" class="notification"></div>
+
+<div class="register-box">
+  <h1>Create Account</h1>
+  <p>Join Ruminix and start studying smarter.</p>
+
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+
+    <div style="position: relative;">
+      <input type="password" id="password" placeholder="Password" required>
+      <i class="fa-solid fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: var(--blue);"></i>
+    </div>
+
+    <div style="position: relative;">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+      <i class="fa-solid fa-eye" id="toggleConfirmPassword" style="position: absolute; right: 15px; top: 12px; cursor: pointer; color: var(--blue);"></i>
+    </div>
+
+    <button type="submit">Create Account</button>
+  </form>
+
+  <div class="login-link">
+    Already have an account? <a href="login.html">Sign In</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseUrl = "https://udfnnxokckkipfpiuhat.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkZm5ueG9rY2traXBmcGl1aGF0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MTQ0MDUsImV4cCI6MjA4ODA5MDQwNX0.Gr3T1xAPuZI86wT3fbl9mWkPQDqBmTMZWakD1LxgC1w"; // keep the same key
+window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Show themed notification
+function showNotification(message, duration = 3000) {
+  const notif = document.getElementById("notification");
+  notif.textContent = message;
+  notif.classList.add("show");
+  setTimeout(() => notif.classList.remove("show"), duration);
+}
+
+// Register form handler
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value.trim() || "User";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+const confirmPassword = document.getElementById("confirmPassword").value.trim();
+if (!email || !password) {
+  showNotification("❌ Please fill all fields");
+  return;
+}
+
+  if (password !== confirmPassword) {
+    showNotification("⚠️ Passwords do not match!");
+    return;
+  }
+
+  try {
+    const btn = e.target.querySelector("button");
+    btn.disabled = true;
+    btn.textContent = "Creating account...";
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password
+    });
+
+    if (error) {
+      showNotification("❌ Registration failed: " + error.message);
+      return;
+    }
+
+    if (!data.user) {
+      showNotification("ℹ️ Please confirm your email before continuing.");
+      return;
+    }
+
+    // Create profile row
+    const { error: profileError } = await supabaseClient
+      .from("profiles")
+      .insert([
+  {
+    id: data.user.id,
+    full_name: name
+  }
+]);
+
+    if (profileError) {
+      showNotification("❌ Profile creation failed: " + profileError.message);
+      return;
+    }
+
+    showNotification("✅ Registration successful!");
+    setTimeout(() => window.location.replace("login.html"), 1000);
+
+  } catch (err) {
+    showNotification("⚠️ Network error. Please check your connection.");
+  } finally {
+    const btn = e.target.querySelector("button");
+    btn.disabled = false;
+    btn.textContent = "Create Account";
+  }
+});
+
+// Password toggle
+const togglePassword = document.getElementById("togglePassword");
+const passwordInput = document.getElementById("password");
+togglePassword.addEventListener("click", function () {
+  const type = passwordInput.type === "password" ? "text" : "password";
+  passwordInput.type = type;
+  this.classList.toggle("fa-eye-slash");
+});
+
+const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
+const confirmPasswordInput = document.getElementById("confirmPassword");
+toggleConfirmPassword.addEventListener("click", function () {
+  const type = confirmPasswordInput.type === "password" ? "text" : "password";
+  confirmPasswordInput.type = type;
+  this.classList.toggle("fa-eye-slash");
+});
+window.supabase = supabase;
+</script>
+</body>
+</html>
